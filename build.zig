@@ -829,17 +829,25 @@ fn runChild(step: *std.Build.Step, io: std.Io, argv: []const []const u8) !void {
 	allocator.free(result.stderr);
 }
 
-fn packageFunction(step: *std.Build.Step, options: std.Build.Step.MakeOptions) anyerror!void {
+fn packageFunction(step: *std.Build.Step) anyerror!*std.Build.Step.Run {
+        const b = step.owner;
 	const base: []const []const u8 = &.{"tar", "-czf"};
-	var io = std.Io.Threaded.init(options.gpa, .{});
-	defer io.deinit();
-	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_x86_64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_x86_64-windows-gnu.lib", "zig-out/lib/cubyz_deps_x86_64-windows-gnu"});
-	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_aarch64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_aarch64-windows-gnu.lib", "zig-out/lib/cubyz_deps_aarch64-windows-gnu"});
-	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_x86_64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-linux-musl.a", "zig-out/lib/cubyz_deps_x86_64-linux-musl"});
-	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_aarch64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-linux-musl.a", "zig-out/lib/cubyz_deps_aarch64-linux-musl"});
-	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_x86_64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-macos-none.a", "zig-out/lib/cubyz_deps_x86_64-macos-none"});
-	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_aarch64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-macos-none.a", "zig-out/lib/cubyz_deps_aarch64-macos-none"});
-	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_headers.tar.gz", "zig-out/include"});
+	const step1 = b.addSystemCommand(base ++ .{"zig-out/cubyz_deps_x86_64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_x86_64-windows-gnu.lib", "zig-out/lib/cubyz_deps_x86_64-windows-gnu"});
+	const step2 = b.addSystemCommand(base ++ .{"zig-out/cubyz_deps_aarch64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_aarch64-windows-gnu.lib", "zig-out/lib/cubyz_deps_aarch64-windows-gnu"});
+	const step3 = b.addSystemCommand(base ++ .{"zig-out/cubyz_deps_x86_64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-linux-musl.a", "zig-out/lib/cubyz_deps_x86_64-linux-musl"});
+	const step4 = b.addSystemCommand(base ++ .{"zig-out/cubyz_deps_aarch64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-linux-musl.a", "zig-out/lib/cubyz_deps_aarch64-linux-musl"});
+	const step5 = b.addSystemCommand(base ++ .{"zig-out/cubyz_deps_x86_64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-macos-none.a", "zig-out/lib/cubyz_deps_x86_64-macos-none"});
+	const step6 = b.addSystemCommand(base ++ .{"zig-out/cubyz_deps_aarch64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-macos-none.a", "zig-out/lib/cubyz_deps_aarch64-macos-none"});
+	const step7 = b.addSystemCommand(base ++ .{"zig-out/cubyz_deps_headers.tar.gz", "zig-out/include"});
+
+        step1.step.dependOn(step);
+        step2.step.dependOn(&step1.step);
+        step3.step.dependOn(&step2.step);
+        step4.step.dependOn(&step3.step);
+        step5.step.dependOn(&step4.step);
+        step6.step.dependOn(&step5.step);
+        step7.step.dependOn(&step6.step);
+        return step7;
 }
 
 pub fn build(b: *std.Build) !void {
@@ -898,15 +906,7 @@ pub fn build(b: *std.Build) !void {
 	}
 
 	{
-		const step = try b.allocator.create(std.Build.Step);
-		step.* = std.Build.Step.init(.{
-			.name = "package",
-			.makeFn = &packageFunction,
-			.owner = b,
-			.id = .custom,
-		});
-		step.dependOn(buildStep);
-		releaseStep.dependOn(step);
+		releaseStep.dependOn(&(try packageFunction(buildStep)).step);
 	}
 
 	// Alias the default `zig build` to only build native target.
