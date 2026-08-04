@@ -2,6 +2,7 @@
 	.name = .cubyz_libs,
 	.fingerprint = 0x309b84abf3e7800f,
 	.version = "0.0.0",
+	.minimum_zig_version = "0.17.0-dev.1552+79dc16a0e",
 	.paths = .{""},
 	.dependencies = .{
 		.glfw = .{
