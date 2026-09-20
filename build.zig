@@ -766,8 +766,8 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	const glfw = b.dependency("glfw", .{
 		.target = target,
 		.optimize = optimize,
-		.x11 = true,
-		.wayland = true,
+		.x11 = target.result.os.tag == .linux,
+		.wayland = target.result.os.tag == .linux,
 	});
 	step.dependOn(&b.addInstallArtifact(glfw.artifact("glfw"), options).step);
 
