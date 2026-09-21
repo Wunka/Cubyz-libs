@@ -768,7 +768,6 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 		.optimize = optimize,
 		.x11 = target.result.os.tag == .linux,
 		.wayland = target.result.os.tag == .linux,
-		.native = target.result.os.tag == .macos,
 	});
 	step.dependOn(&b.addInstallArtifact(glfw.artifact("glfw"), options).step);
 
