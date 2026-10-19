@@ -11,7 +11,7 @@ permissions:
 jobs:
   release:
     name: Create release
-    runs-on: macos-latest
+    runs-on: xcode-27
     env:
       tag: ${{ github.ref_name }}
     steps:
