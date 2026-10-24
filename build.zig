@@ -768,7 +768,7 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 		.optimize = optimize,
 		.x11 = target.result.os.tag == .linux,
 		.wayland = target.result.os.tag == .linux,
-		.native = target.result.os.tag == .macos,
+		.native = false,
 	});
         if(target.result.os.tag == .macos) {
             c_lib.root_module.linkSystemLibrary("objc", .{.use_pkg_config = .no});
