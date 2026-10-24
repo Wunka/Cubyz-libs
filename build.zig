@@ -763,7 +763,6 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 		artifact.root_module.pic = true; // Needed for thread sanitizer
 		step.dependOn(&b.addInstallArtifact(artifact, options).step);
 	}
-        glfw.module("glfw").linkSystemLibrary("objc", .{.use_pkg_config = .no});
 	const glfw = b.dependency("glfw", .{
 		.target = target,
 		.optimize = optimize,
@@ -771,6 +770,7 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 		.wayland = target.result.os.tag == .linux,
 		.native = target.result.os.tag == .macos,
 	});
+        glfw.module("glfw").linkSystemLibrary("objc", .{.use_pkg_config = .no});
 	step.dependOn(&b.addInstallArtifact(glfw.artifact("glfw"), options).step);
 
 	return c_lib;
