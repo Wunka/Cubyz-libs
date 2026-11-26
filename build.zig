@@ -768,8 +768,6 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 		.optimize = optimize,
 		.x11 = target.result.os.tag == .linux,
 		.wayland = target.result.os.tag == .linux,
-		// on macos we can use the native option, so that we don't have to download the xcode dependency
-		.native = target.result.os.tag == .macos and builtin.os.tag == .macos,
 	});
 	step.dependOn(&b.addInstallArtifact(glfw.artifact("glfw"), options).step);
 
